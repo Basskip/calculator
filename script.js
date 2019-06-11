@@ -10,28 +10,73 @@ function buttonSetup() {
             pushButton(e.target.textContent);
         });
     });
+
+    disableOperators(true);
+}
+
+function disableOperators(bool) {
+    var operators = document.querySelectorAll('.operator');
+    if (bool === true) {
+        operators.forEach((btn) => {
+            btn.disabled = true;
+        });
+    } else {
+        operators.forEach((btn) => {
+            btn.disabled = false;
+        });
+    }
+}
+
+function disableNumbers(bool) {
+    var numbers = document.querySelectorAll('.number');
+    if (bool === true) {
+        numbers.forEach((btn) => {
+            btn.disabled = true;
+        });
+    } else {
+        numbers.forEach((btn) => {
+            btn.disabled = false;
+        });
+    }
+}
+
+function disableEquals(bool) {
+    var equals = document.getElementById("equals");
+    if (bool === true) {
+        equals.disabled = true;
+    
+    } else {
+        equals.disabled = false;            
+    }
 }
 
 function pushButton(button) {
-    console.log(button);
     
     if (button === "Clear") {
         setDisplay('');
         expression = [];
         currentNumber = "";
+        disableOperators(true);
+        disableNumbers(false);
+        disableEquals(false);
     } else if (button === "=") {
         expression.push(parseInt(currentNumber));
         setDisplay(evaluate(expression));
         currentNumber = expression[0].toString();
+        expression = [];
     } else if (/[0-9]/.test(button)) {
         //A number was pressed
         currentNumber += button;
         appendDisplay(button);
+        disableOperators(false);
+        disableEquals(false);
     } else {
         expression.push(parseInt(currentNumber));
         currentNumber = "";
         expression.push(button);
         appendDisplay(button);
+        disableOperators(true);
+        disableEquals(true);
     }
 }
 
@@ -52,6 +97,12 @@ function evaluate(expr) {
         }
 
         evaluated = operate(expr[index - 1], expr[index + 1], expr[index]);
+        if (evaluated === "ERR DIV 0") {
+            disableOperators(true);
+            disableNumbers(true);
+            disableEquals(true);
+            return "ERR DIV 0";
+        }
         expr.splice(index - 1, 3, evaluated);
     }
     return expr[0];
@@ -87,9 +138,10 @@ function multiply(num1, num2) {
 
 function divide(num1, num2) {
     if (num2 === 0) {
-        return "Nice try!";
+        return "ERR DIV 0";
+    } else {
+        return num1 / num2;
     }
-    return num1 / num2;
 }
 
 function operate(num1, num2, operator) {
